@@ -1,0 +1,39 @@
+Предупреждение	1	Обнаружены конфликты между различными версиями одной и той же зависимой сборки. Установите свойство "AutoGenerateBindingRedirects" в файле проекте равным true. Дополнительные сведения см. по адресу http://go.microsoft.com/fwlink/?LinkId=294190.	IK
+___________________
+System.Windows.Markup.XamlParseException произошло
+  _HResult=-2146233087
+  _message="Вызов конструктора для типа "IK.MainWindow", удовлетворяющего указанным ограничениям привязки, привел к выдаче исключения.": номер строки "4" и позиция в строке "5".
+  HResult=-2146233087
+  IsTransient=false
+  Message="Вызов конструктора для типа "IK.MainWindow", удовлетворяющего указанным ограничениям привязки, привел к выдаче исключения.": номер строки "4" и позиция в строке "5".
+  Source=PresentationFramework
+  LineNumber=4
+  LinePosition=5
+  StackTrace:
+       в System.Windows.Markup.WpfXamlLoader.Load(XamlReader xamlReader, IXamlObjectWriterFactory writerFactory, Boolean skipJournaledProperties, Object rootObject, XamlObjectWriterSettings settings, Uri baseUri)
+  InnerException: System.TypeInitializationException
+       _HResult=-2146233036
+       _message=Инициализатор типа "Emgu.CV.CvInvoke" выдал исключение.
+       HResult=-2146233036
+       IsTransient=false
+       Message=Инициализатор типа "Emgu.CV.CvInvoke" выдал исключение.
+       Source=Emgu.CV.World
+       TypeName=Emgu.CV.CvInvoke
+       StackTrace:
+            в Emgu.CV.CvInvoke.cveVideoCaptureCreateFromDevice(Int32 index)
+            в Emgu.CV.Capture..ctor(Int32 camIndex)
+            в Emgu.CV.Capture..ctor()
+            в IK.MainWindow..ctor() в j:\Свобода\IK\IK\MainWindow.xaml.cs:строка 27
+       InnerException: System.DllNotFoundException
+            _HResult=-2146233052
+            _message=Не удается загрузить DLL "cvextern": Не найден указанный модуль. (Исключение из HRESULT: 0x8007007E)
+            HResult=-2146233052
+            IsTransient=false
+            Message=Не удается загрузить DLL "cvextern": Не найден указанный модуль. (Исключение из HRESULT: 0x8007007E)
+            Source=Emgu.CV.World
+            ResourceId=0
+            TypeName=""
+            StackTrace:
+                 в Emgu.CV.CvInvoke.RedirectError(CvErrorCallback errorHandler, IntPtr userdata, IntPtr prevUserdata)
+                 в Emgu.CV.CvInvoke..cctor()
+            InnerException: 
