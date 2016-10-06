@@ -12,6 +12,7 @@ using System.Threading;
 using System.Drawing;
 using System.Windows.Media.Imaging;
 using System.Windows;
+using System.Collections.Concurrent;
 //
 using System.Threading.Tasks;
 
@@ -22,8 +23,8 @@ namespace IK
         private Capture _capture; // Камера
         private AutoResetEvent _autoEvent; // Сигналка для таймера
         private System.Threading.Timer _timer; // Таймер
-        private Queue<Image<Gray, Byte>> _BS02 = null; // Рисунок для отображения
-        private Queue<IImage> _Images = null; // Очередь для кадров
+        private ConcurrentQueue<Image<Gray, Byte>> _BS02 = null; // Рисунок для отображения
+        private ConcurrentQueue<IImage> _Images = null; // Очередь для кадров
         private Thread _ConversionThread = null; // Поток под преобразования
 
         public event MethodContainer event_BS;
@@ -35,12 +36,11 @@ namespace IK
         {
             _autoEvent = new AutoResetEvent(false);
             _capture = new Capture(_CameraSelectedIndex); // Выбор камеры
-            //_capture = new Capture(@"J:\1.avi"); // файл 
             _capture.Start();
 
-            _BS02 = new Queue<Image<Gray, byte>>(); // Создание очереди под кадры после обработки
+            _BS02 = new ConcurrentQueue<Image<Gray, byte>>(); // Создание очереди под кадры после обработки
 
-            _Images = new System.Collections.Generic.Queue<IImage>(); // Создание очереди под кадры
+            _Images = new ConcurrentQueue<IImage>(); // Создание очереди под кадры
 
             _ConversionThread = new Thread(this._Conversion);
             _ConversionThread.Start(_Images);
@@ -56,13 +56,14 @@ namespace IK
             if (_timer != null)
             {
                 _autoEvent.WaitOne();
+                
                 _timer.Dispose();
                 _capture.Stop();
                 _capture.Dispose();
                 _ConversionThread.Abort();
                 _timer = null;
-                _Images.Clear();
-                _BS02.Clear();
+                //_Images;
+                //_BS02;
             }
             return true;
         }
@@ -73,24 +74,19 @@ namespace IK
         void _Conversion(object _Images)
         {
             IImage _image;
-
             while (true)
             {
                 Thread.Sleep(0);
-
-                try
+                if (((ConcurrentQueue<IImage>)_Images).TryDequeue(out _image))
                 {
-                    _image = ((Queue<IImage>)_Images).Dequeue();
-
+                    _AdditionAsync((IImage)_image.Clone());
+                    _image.Dispose();
                 }
-                catch (System.InvalidOperationException)
+                else
                 {
-                    _image = null;
                     Thread.Sleep(10);
                     _autoEvent.Set();
-                }
-                if (_image != null)
-                    _AdditionAsync(_image);
+                }                  
             }
         }
 
@@ -133,8 +129,7 @@ namespace IK
         /// </summary>
         private void _TimerEvent(object obj)
         {
-            IImage II = _capture.QueryFrame();
-            _Images.Enqueue(II);
+            _Images.Enqueue(_capture.QueryFrame());
             event_BS(); // Событие
         }
 
@@ -145,20 +140,17 @@ namespace IK
         {
             get
             {
-                BitmapSource _bs;
-                try
+                Image<Gray, Byte> _im;
+                if (_BS02.TryDequeue(out _im))
                 {
-                    _bs = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                        _BS02.Dequeue().Bitmap.GetHbitmap(),
+                    return System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                        _im.Bitmap.GetHbitmap(),
                         IntPtr.Zero,
                         Int32Rect.Empty,
                         System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
                 }
-                catch (System.InvalidOperationException)
-                {
-                    _bs = null;
-                }
-                return _bs;
+                else
+                    return null;
             }
             set
             {
