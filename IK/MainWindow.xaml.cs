@@ -68,9 +68,9 @@ namespace IK
             B_Stop.IsEnabled = true;
             B_Run.IsEnabled = false;
             CoB_Camera.IsEnabled = CoB_fps.IsEnabled = false;
-
+            // Настройка самой камеры
             _Camera._StartCamera(CoB_Camera.SelectedIndex, int.Parse(CoB_fps.SelectedItem.ToString()));
-
+            // Подписка на событие срабатывания таймера камеры
             _Camera.event_BS += this.update;
         }
 
@@ -82,7 +82,7 @@ namespace IK
             B_Stop.IsEnabled = false;
             B_Run.IsEnabled = true;
             CoB_Camera.IsEnabled = CoB_fps.IsEnabled = true;
-
+            // Отписка на событие срабатывания таймера камеры
             if (_Camera._StopCamera())
                 _Camera.event_BS -= this.update;
         }

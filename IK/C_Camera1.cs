@@ -21,11 +21,15 @@ namespace IK
     public class C_Camera1
     {
         private Capture _capture; // Камера
-        private AutoResetEvent _autoEvent; // Сигналка для таймера
+        private AutoResetEvent _autoEvent; // Сигналка 
         private System.Threading.Timer _timer; // Таймер
-        private ConcurrentQueue<Image<Gray, Byte>> _BS02 = null; // Рисунок для отображения
+        //private System.Timers.Timer _Timer; // Таймер
+
+        private ConcurrentQueue<Image<Gray, Byte>> _BS02 = null; // Очередь для отображения
         private ConcurrentQueue<IImage> _Images = null; // Очередь для кадров
+
         private Thread _ConversionThread = null; // Поток под преобразования
+        //private Thread _CrutchTimerThread = null; // Поток под костыль для таймера
 
         public event MethodContainer event_BS;
         public delegate void MethodContainer();
@@ -45,23 +49,70 @@ namespace IK
             _ConversionThread = new Thread(this._Conversion);
             _ConversionThread.Start(_Images);
 
+            /*
+            _CrutchTimerThread = new Thread(this._CrutchTimer);
+            _CrutchTimerThread.Start(_fps);
+            */
+
+            /*
+            _Timer = new System.Timers.Timer((int)(1000 / _fps));
+            _Timer.Elapsed += _Timer_Elapsed;
+            _Timer.Start();
+            */
+             
             _timer = new System.Threading.Timer(_TimerEvent, null, 0, (int)(1000 / _fps)); // Настройка таймера 
         }
-
+        /*
+        /// <summary>
+        /// Поток под таймер (это и есть костыль)
+        /// </summary>
+        void _CrutchTimer(object _fps)
+        {
+            _Timer = new System.Timers.Timer((int)(1000 / (int)_fps));
+            _Timer.Elapsed += _Timer_Elapsed;
+            _Timer.Start();
+        }
+        */
+        /// <summary>
+        /// Получение изображения с камеры по событию
+        /// </summary>
+        void _Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            _Images.Enqueue(_capture.QueryFrame());
+            event_BS(); // Событие
+            //throw new NotImplementedException();
+        }
         /// <summary>
         /// Стоп камеры
         /// </summary>
         public bool _StopCamera()
         {
-            if (_timer != null)
+            //if (_Timer != null)
             {
                 _autoEvent.WaitOne();
-                
-                _timer.Dispose();
+                // Освобожддение всего что использовалось
+
+                /*
+                _Timer.Stop();
+
+                while (_Timer.Enabled) 
+                    Thread.Sleep(10);
+                  
+                _CrutchTimerThread.Abort();
+                */
+
+                /*
+                _Timer.Close();
+                _Timer.Dispose();
+                _Timer.Elapsed -= _Timer_Elapsed;
+                _Timer = null;
+                */
+                 
                 _capture.Stop();
                 _capture.Dispose();
                 _ConversionThread.Abort();
-                _timer = null;
+
+
                 //_Images;
                 //_BS02;
             }
@@ -123,7 +174,7 @@ namespace IK
                 return _Magic.Clone();
             });
         }
-
+        
         /// <summary>
         /// Получение изображения с камеры по событию
         /// </summary>
@@ -132,7 +183,7 @@ namespace IK
             _Images.Enqueue(_capture.QueryFrame());
             event_BS(); // Событие
         }
-
+        
         /// <summary>
         /// Обработанное изображение с камеры
         /// </summary>
