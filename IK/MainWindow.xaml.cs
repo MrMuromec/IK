@@ -56,9 +56,9 @@ namespace IK
                 B_Run.IsEnabled = false;
             }
             // Список фпс
-            for (int i = 40; i > 0; i-=2)
+            for (int i = 5; i <= 80; i+=5)
                 CoB_fps.Items.Add(i);
-            CoB_fps.SelectedIndex = 8;
+            CoB_fps.SelectedIndex = 3;
         }
         /// <summary>
         /// Запуск камеры
